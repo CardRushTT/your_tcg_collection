@@ -31,7 +31,7 @@ export type OwnedCardViewModel = Pick<
 > & {
   card: Pick<
     PokemonCardDocument,
-    "id" | "name" | "number" | "rarity" | "types" | "images"
+    "id" | "name" | "number" | "rarity" | "types" | "images" | "artist"
   > & {
     set?: Pick<SetDocument, "name">;
   };

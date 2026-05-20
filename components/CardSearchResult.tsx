@@ -64,6 +64,11 @@ export function CardSearchResult({ card, onClick }: CardSearchResultProps) {
         <div className="text-sm text-muted-foreground">
           {card.set?.name ?? "Unknown Set"} • {card.number}
         </div>
+        {card.artist ? (
+          <div className="text-xs text-muted-foreground truncate">
+            Artist: {card.artist}
+          </div>
+        ) : null}
         <div
           className={`mt-1 inline-block px-2 py-0.5 rounded-full text-xs
                        bg-linear-to-r ${rarityGradient} text-white font-medium`}

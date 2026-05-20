@@ -15,6 +15,7 @@ type CardSeedInput = {
   types: string[];
   convertedRetreatCost: number;
   number: string;
+  artist: string;
   rarity: string;
   regulationMark: string;
   images: {
@@ -60,6 +61,10 @@ function toCardSeedInput(
         ? item.convertedRetreatCost
         : 0,
     number: item.number,
+    artist:
+      typeof item.artist === "string" && item.artist.trim().length > 0
+        ? item.artist
+        : "Unknown Artist",
     rarity: item.rarity,
     regulationMark: item.regulationMark,
     images: {

@@ -33,6 +33,7 @@ const pokemonCardSchema = new Schema(
       default: null,
     },
     number: { type: String, required: true, trim: true },
+    artist: { type: String, required: false, trim: true },
     rarity: { type: String, required: true, trim: true },
     regulationMark: { type: String, required: true, trim: true },
     images: { type: imagesSchema, required: true },
@@ -54,7 +55,14 @@ pokemonCardSchema.virtual("set", {
 export type PokemonCardDocument = InferSchemaType<typeof pokemonCardSchema>;
 export type PokemonCardViewModel = Pick<
   PokemonCardDocument,
-  "id" | "name" | "number" | "regulationMark" | "rarity" | "types" | "images"
+  | "id"
+  | "name"
+  | "number"
+  | "regulationMark"
+  | "rarity"
+  | "types"
+  | "images"
+  | "artist"
 > & {
   set?: Pick<SetDocument, "name">;
 };
