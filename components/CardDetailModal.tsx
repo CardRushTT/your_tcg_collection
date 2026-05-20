@@ -132,6 +132,13 @@ export function CardDetailModal({
                       </span>
                     </div>
 
+                    <div className="flex items-center justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Artist</span>
+                      <span className="font-medium">
+                        {pokemonCard?.artist || "Unknown Artist"}
+                      </span>
+                    </div>
+
                     {pokemonCard?.types?.[0] && (
                       <div className="flex items-center justify-between py-2 border-b border-border">
                         <span className="text-muted-foreground">Type</span>

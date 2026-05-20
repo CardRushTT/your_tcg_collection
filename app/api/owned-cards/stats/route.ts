@@ -8,6 +8,11 @@ type QuantitySummary = {
   totalQuantity: number;
 };
 
+type ArtistSummary = {
+  _id: null;
+  artists: string[];
+};
+
 type OwnedSetSummary = {
   id: string;
   name: string;
@@ -17,12 +22,49 @@ export async function GET() {
   try {
     await connectDB();
 
-    const [quantitySummary, ownedSets] = await Promise.all([
+    const [quantitySummary, artistSummary, ownedSets] = await Promise.all([
       OwnedCard.aggregate<QuantitySummary>([
         {
           $group: {
             _id: null,
             totalQuantity: { $sum: "$quantity" },
+          },
+        },
+      ]),
+      OwnedCard.aggregate<ArtistSummary>([
+        {
+          $lookup: {
+            from: PokemonCard.collection.name,
+            localField: "cardId",
+            foreignField: "id",
+            as: "card",
+          },
+        },
+        {
+          $unwind: "$card",
+        },
+        {
+          $group: {
+            _id: null,
+            artists: {
+              $addToSet: {
+                $trim: {
+                  input: { $ifNull: ["$card.artist", ""] },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            artists: {
+              $filter: {
+                input: "$artists",
+                as: "artist",
+                cond: { $ne: ["$$artist", ""] },
+              },
+            },
           },
         },
       ]),
@@ -74,10 +116,12 @@ export async function GET() {
     ]);
 
     const summary = quantitySummary[0];
+    const artists = artistSummary[0]?.artists ?? [];
 
     return NextResponse.json(
       {
         totalQuantity: summary?.totalQuantity ?? 0,
+        artists: artists.sort((a, b) => a.localeCompare(b)),
         sets: ownedSets,
       },
       { status: 200 },

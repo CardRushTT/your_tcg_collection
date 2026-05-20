@@ -23,7 +23,8 @@ function matchesSearch(card: OwnedCardViewModel, query: string) {
   const q = query.toLowerCase();
   const cardName = card.card?.name?.toLowerCase() ?? "";
   const setName = card.card?.set?.name?.toLowerCase() ?? "";
-  return cardName.includes(q) || setName.includes(q);
+  const artist = card.card?.artist?.toLowerCase() ?? "";
+  return cardName.includes(q) || setName.includes(q) || artist.includes(q);
 }
 
 export async function generateMetadata({

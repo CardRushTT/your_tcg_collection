@@ -12,6 +12,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 import { AppToast } from "@/components/AppToast";
+import { ArtistSelect } from "@/components/ArtistSelect";
 import { CardGrid } from "@/components/CardGrid";
 import { RaritySelect } from "@/components/RaritySelect";
 import { SearchBar } from "@/components/SearchBar";
@@ -23,6 +24,7 @@ import Link from "next/link";
 
 type CollectionStatsResponse = {
   totalQuantity: number;
+  artists: string[];
   sets: Array<{
     id: string;
     name: string;
@@ -48,8 +50,10 @@ function HomeContent() {
   );
   const [selectedRarity, setSelectedRarity] = useState("");
   const [selectedSetId, setSelectedSetId] = useState("");
+  const [selectedArtist, setSelectedArtist] = useState("");
   const [stats, setStats] = useState<CollectionStatsResponse>({
     totalQuantity: 0,
+    artists: [],
     sets: [],
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -61,6 +65,7 @@ function HomeContent() {
 
   const rarityFromUrl = searchParams.get("rarity")?.trim() ?? "";
   const setFromUrl = searchParams.get("set")?.trim() ?? "";
+  const artistFromUrl = searchParams.get("artist")?.trim() ?? "";
   const rawPageFromUrl = Number(searchParams.get("page") ?? "1");
 
   const fetchCards = async () => {
@@ -115,6 +120,10 @@ function HomeContent() {
   useEffect(() => {
     setSelectedSetId(setFromUrl);
   }, [setFromUrl]);
+
+  useEffect(() => {
+    setSelectedArtist(artistFromUrl);
+  }, [artistFromUrl]);
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -192,6 +201,30 @@ function HomeContent() {
     });
   };
 
+  const handleArtistChange = async (artist: string) => {
+    setSelectedArtist(artist);
+    setSearchQuery("");
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (artist) {
+      nextParams.set("artist", artist);
+    } else {
+      nextParams.delete("artist");
+    }
+    nextParams.delete("search");
+    nextParams.delete("page");
+
+    const query = nextParams.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  };
+
+  const artistOptions = stats.artists.map((artist) => ({
+    id: artist,
+    name: artist,
+  }));
+
   const selectedSetName =
     stats.sets.find((set) => set.id === selectedSetId)?.name.toLowerCase() ??
     "";
@@ -211,11 +244,17 @@ function HomeContent() {
       }
     }
 
+    if (selectedArtist) {
+      const cardArtist = card.card.artist?.toLowerCase() ?? "";
+      if (cardArtist !== selectedArtist.toLowerCase()) {
+        return false;
+      }
+    }
+
     if (!searchQuery) return true;
     const cardName = card.card?.name?.toLowerCase() ?? "";
-    const setName = card.card?.set?.name?.toLowerCase() ?? "";
     const query = searchQuery.toLowerCase();
-    return cardName.includes(query) || setName.includes(query);
+    return cardName.includes(query);
   });
 
   const totalPages = Math.max(
@@ -402,6 +441,11 @@ function HomeContent() {
               value={selectedSetId}
               sets={stats.sets}
               onChange={handleSetChange}
+            />
+            <ArtistSelect
+              value={selectedArtist}
+              artists={artistOptions}
+              onChange={handleArtistChange}
             />
           </div>
 
