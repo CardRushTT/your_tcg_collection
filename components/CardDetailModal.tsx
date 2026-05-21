@@ -114,12 +114,6 @@ export function CardDetailModal({
                   >
                     {pokemonCard?.name || "Unknown Card"}
                   </h2>
-                  <div
-                    className={`inline-block px-3 py-1 rounded-full text-sm
-                                 bg-linear-to-r ${rarityGradient} text-white font-bold mb-4`}
-                  >
-                    {pokemonCard?.rarity || "Rare"}
-                  </div>
 
                   <div className="md:space-y-3 md:mt-6">
                     {isAdmin && (
