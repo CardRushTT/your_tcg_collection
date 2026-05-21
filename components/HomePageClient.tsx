@@ -13,6 +13,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 
 import { AppToast } from "@/components/AppToast";
 import { CardGrid } from "@/components/CardGrid";
+import { LoadingState } from "@/components/LoadingState";
 import { RaritySelect } from "@/components/RaritySelect";
 import { SearchBar } from "@/components/SearchBar";
 import { SetSelect } from "@/components/SetSelect";
@@ -373,19 +374,7 @@ function HomeContent() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-border border-t-primary" />
-          <p
-            className="text-muted-foreground text-sm tracking-widest uppercase"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Loading Collection...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
