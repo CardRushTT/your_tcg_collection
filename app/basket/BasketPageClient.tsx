@@ -42,6 +42,7 @@ export function BasketPageClient() {
   const [sharedBasketItems, setSharedBasketItems] = useState<
     BasketItem[] | null
   >(null);
+  const [showSharedBasketDialog, setShowSharedBasketDialog] = useState(false);
   const [isLoadingShared, setIsLoadingShared] = useState(false);
   const [animatingButton, setAnimatingButton] = useState<string | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
@@ -118,6 +119,7 @@ export function BasketPageClient() {
         );
         if (resolved.length > 0) {
           setSharedBasketItems(resolved);
+          setShowSharedBasketDialog(true);
         }
       })
       .catch((err) => {
@@ -506,6 +508,45 @@ export function BasketPageClient() {
                 className="flex-1 rounded-lg border border-border px-4 py-2 text-sm hover:bg-muted transition-colors"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {sharedBasketItems && showSharedBasketDialog && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl border-2 border-border bg-card p-6 shadow-xl">
+            <h2
+              className="text-lg font-semibold mb-2"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Replace Basket?
+            </h2>
+            <p className="text-sm text-muted-foreground mb-5">
+              A shared basket with {sharedBasketItems.length} card
+              {sharedBasketItems.length !== 1 ? "s" : ""} was found in this
+              link. This will replace your current basket.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setItems(sharedBasketItems);
+                  setSharedBasketItems(null);
+                  setShowSharedBasketDialog(false);
+                  showToast("Basket replaced with shared basket");
+                }}
+                className="flex-1 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+              >
+                Yes, Replace
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSharedBasketDialog(false)}
+                className="flex-1 rounded-lg border border-border px-4 py-2 text-sm hover:bg-muted transition-colors"
+              >
+                Dismiss
               </button>
             </div>
           </div>
