@@ -16,6 +16,7 @@ export const COLLECTR_SET_MAP: Record<string, string> = {
   "Scarlet & Violet Base Set": "Scarlet & Violet",
   "Sword & Shield Base Set": "Sword & Shield",
   "Sword & Shield Promo": "SWSH Black Star Promos",
+  "Scarlet & Violet Promo": "Scarlet & Violet Black Star Promos",
 };
 
 export const CARD_CONDITIONS = [
