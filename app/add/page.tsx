@@ -545,7 +545,7 @@ export default function AddCardPage() {
                     const file = event.target.files?.[0] ?? null;
                     setImportFile(file);
                   }}
-                  className="w-full rounded-lg border-2 border-border bg-input-background px-3 py-2 text-sm"
+                  className="w-full rounded-lg border-2 border-border bg-input-background px-3 py-2 text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground file:transition-colors hover:file:bg-primary/90"
                 />
                 <p className="mt-2 text-xs text-muted-foreground">
                   {importFile
