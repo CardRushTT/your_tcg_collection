@@ -102,8 +102,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("Collectr CSV headers:", headers);
-
     const nonEmptyLines = csvText
       .split(/\r?\n/)
       .filter((line) => line.trim().length > 0);
@@ -162,8 +160,10 @@ export async function POST(request: Request) {
         await OwnedCard.findOneAndUpdate(
           { cardId },
           {
-            $set: {
+            $inc: {
               quantity: quantityValue,
+            },
+            $set: {
               price: marketPriceValue,
               cardCondition: cardConditionValue,
             },

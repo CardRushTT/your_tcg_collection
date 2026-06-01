@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { AppToast } from "@/components/AppToast";
 import type { OwnedCardViewModel } from "@/database/ownedCard.model";
 import { useBasket } from "@/hooks/useBasket";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { useToast } from "@/hooks/useToast";
 import { RARITY_COLORS } from "@/lib/constants";
 import { useSession } from "next-auth/react";
@@ -51,6 +52,12 @@ export function BasketPageClient() {
 
   const { data: session } = useSession();
   const isAdmin = !!session;
+  const { isEnabled } = useFeatureFlags();
+  const showPrice = isEnabled("show_price");
+  const totalPrice = items.reduce(
+    (sum, item) => sum + (item.price ?? 1) * item.quantity,
+    0,
+  );
 
   const openImageModal = async (item: BasketItem) => {
     // If we already have the large image, use it
@@ -111,6 +118,7 @@ export function BasketPageClient() {
                 cardImageLarge: owned.card.images?.large ?? "",
                 setName: owned.card.set?.name ?? "",
                 rarity: owned.card.rarity ?? "",
+                price: owned.price ?? 1,
                 quantity: clampedQty,
                 maxQuantity: owned.quantity,
               },
@@ -268,7 +276,7 @@ export function BasketPageClient() {
           <div className="h-3 bg-linear-to-r from-accent to-primary" />
           <div className="p-5 sm:p-6">
             <div className="mb-4 flex flex-col gap-3">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <h2
                   className="text-xl"
                   style={{ fontFamily: "var(--font-display)" }}
@@ -285,6 +293,18 @@ export function BasketPageClient() {
                     {totals.totalQuantity}
                   </span>
                 </div>
+
+                {showPrice && items.length > 0 && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-900">
+                    <span className="uppercase tracking-wide">Total</span>
+                    <span
+                      className="font-semibold text-md"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      ${totalPrice.toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
