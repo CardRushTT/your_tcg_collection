@@ -37,6 +37,9 @@ export default function AddCardPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [collectrAddedCount, setCollectrAddedCount] = useState<number | null>(
+    null,
+  );
   const [collectrUnmatchedRows, setCollectrUnmatchedRows] = useState<
     CollectrUnmatchedRow[]
   >([]);
@@ -140,6 +143,9 @@ export default function AddCardPage() {
 
     setIsImporting(true);
     try {
+      setCollectrAddedCount(null);
+      setCollectrUnmatchedRows([]);
+
       const formData = new FormData();
       formData.append("file", importFile);
 
@@ -158,8 +164,10 @@ export default function AddCardPage() {
       }
 
       const data = (await response.json()) as {
+        addedCount?: number;
         unmatchedRows?: CollectrUnmatchedRow[];
       };
+      setCollectrAddedCount(data.addedCount ?? 0);
       setCollectrUnmatchedRows(data.unmatchedRows ?? []);
       closeImportModal();
     } catch (error) {
@@ -218,6 +226,32 @@ export default function AddCardPage() {
             </button>
           ) : null}
         </div>
+
+        {collectrAddedCount !== null && (
+          <div className="mb-6 rounded-2xl border-4 border-emerald-700 bg-emerald-100 p-4 text-emerald-950 shadow-lg">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2
+                  className="text-xl"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Collectr Import Complete
+                </h2>
+                <p className="text-sm text-emerald-900">
+                  {collectrAddedCount} card
+                  {collectrAddedCount === 1 ? "" : "s"} added or updated.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCollectrAddedCount(null)}
+                className="rounded-md border border-emerald-800 px-2 py-1 text-xs hover:bg-emerald-200 transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
 
         {collectrUnmatchedRows.length > 0 && (
           <div className="mb-6 rounded-2xl border-4 border-amber-700 bg-amber-100 p-4 text-amber-950 shadow-lg">

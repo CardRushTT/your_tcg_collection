@@ -1,4 +1,4 @@
-import { PokemonCard, Set } from "@/database";
+import { OwnedCard, PokemonCard, Set } from "@/database";
 
 import { COLLECTR_SET_MAP } from "@/lib/constants";
 import connectDB from "@/lib/mongodb";
@@ -45,6 +45,17 @@ function parseCardNumber(value: string): string {
   }
 
   return numericPart.replace(/^0+/, "") || "0";
+}
+
+function parseQuantity(value: string): number {
+  const parsed = Number.parseInt(value.trim(), 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function parsePrice(value: string): number {
+  const normalized = value.replace(/[$,\s]/g, "").trim();
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 1;
 }
 
 export async function POST(request: Request) {
@@ -100,6 +111,9 @@ export async function POST(request: Request) {
     const setColumnIndex = headers.indexOf("Set");
     const productNameColumnIndex = headers.indexOf("Product Name");
     const cardNumberColumnIndex = headers.indexOf("Card Number");
+    const cardConditionColumnIndex = headers.indexOf("Card Condition");
+    const quantityColumnIndex = headers.indexOf("Quantity");
+    const marketPriceColumnIndex = headers.indexOf("Market Price");
     const unmatchedRows: Array<{
       rowNumber: number;
       set: string;
@@ -108,6 +122,7 @@ export async function POST(request: Request) {
       cardId: string;
       row: string[];
     }> = [];
+    let addedCount = 0;
 
     await connectDB();
 
@@ -118,6 +133,10 @@ export async function POST(request: Request) {
       const setValue = row[setColumnIndex] ?? "";
       const productNameValue = row[productNameColumnIndex] ?? "";
       const cardNumberValue = row[cardNumberColumnIndex] ?? "";
+      const cardConditionValue =
+        row[cardConditionColumnIndex]?.trim() || "Mint";
+      const quantityValue = parseQuantity(row[quantityColumnIndex] ?? "");
+      const marketPriceValue = parsePrice(row[marketPriceColumnIndex] ?? "");
       const cardNumberFirstPart = parseCardNumber(cardNumberValue);
       const mappedSetName = COLLECTR_SET_MAP[setValue] ?? setValue;
       const matchingSet = await Set.findOne({ name: mappedSetName })
@@ -139,15 +158,27 @@ export async function POST(request: Request) {
         });
       }
 
-      if (matchingSet) {
-        console.log(
-          `Collectr CSV row ${index + 1} - ${cardId} Pokemon card:`,
-          matchingPokemonCard,
+      if (matchingSet && matchingPokemonCard) {
+        await OwnedCard.findOneAndUpdate(
+          { cardId },
+          {
+            $set: {
+              quantity: quantityValue,
+              price: marketPriceValue,
+              cardCondition: cardConditionValue,
+            },
+          },
+          {
+            upsert: true,
+            returnDocument: "after",
+            setDefaultsOnInsert: true,
+          },
         );
+        addedCount += 1;
       }
     }
 
-    return NextResponse.json({ unmatchedRows }, { status: 200 });
+    return NextResponse.json({ addedCount, unmatchedRows }, { status: 200 });
   } catch (error) {
     console.error("Failed to import Collectr CSV:", error);
     return NextResponse.json(
