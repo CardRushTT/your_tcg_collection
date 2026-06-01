@@ -6,6 +6,7 @@ import {
 import { useMemo, useState } from "react";
 
 import type { OwnedCardViewModel } from "@/database/ownedCard.model";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { RARITY_COLORS } from "@/lib/constants";
 import { isHoloRarity } from "@/lib/functions";
 import Image from "next/image";
@@ -39,10 +40,14 @@ const typeColors: Record<string, string> = {
 };
 
 export function CardItem({ card, onClick, index, onBasketAdd }: CardItemProps) {
+  const { isEnabled } = useFeatureFlags();
+  const showPrice = isEnabled("show_price");
+  const showCardCondition = isEnabled("show_card_condition");
+  const hasPrice = card.price !== null && card.price !== undefined;
   const pokemonCard = card.card;
   const rarityGradient =
     RARITY_COLORS[pokemonCard?.rarity ?? ""] || "from-gray-300 to-gray-200";
-  const isHolo = isHoloRarity(pokemonCard?.rarity);
+  const isHolo = isHoloRarity(pokemonCard?.rarity ?? undefined);
   const [basketQuantityToAdd, setBasketQuantityToAdd] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const [inBasketQuantity, setInBasketQuantity] = useState(() => {
@@ -72,6 +77,8 @@ export function CardItem({ card, onClick, index, onBasketAdd }: CardItemProps) {
           pokemonCard?.images?.small || pokemonCard?.images?.large || "",
         setName: pokemonCard?.set?.name || "",
         rarity: pokemonCard?.rarity || "",
+        price: card.price ?? 1,
+        cardCondition: card.cardCondition || "Mint",
         maxQuantity: card.quantity,
       },
       basketQuantityToAdd,
@@ -191,6 +198,31 @@ export function CardItem({ card, onClick, index, onBasketAdd }: CardItemProps) {
               x{card.quantity}
             </div>
           </div>
+
+          {showPrice && (
+            <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span>Price</span>
+              <div
+                className="bg-emerald-700 text-white
+                            px-2 py-1 rounded-full text-xs font-bold"
+              >
+                {hasPrice ? `$${card.price.toFixed(2)}` : "$1"}
+              </div>
+            </div>
+          )}
+
+          {showCardCondition && (
+            <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span>Condition</span>
+              <div
+                className="bg-slate-700 text-white
+                            px-2 py-1 rounded-full text-xs font-bold"
+              >
+                {card.cardCondition || "Mint"}
+              </div>
+            </div>
+          )}
+
           <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-end">
             <span className="text-[11px] text-muted-foreground font-medium">
               In Basket: {inBasketQuantity}
