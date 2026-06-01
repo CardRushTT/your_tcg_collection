@@ -276,29 +276,31 @@ export function BasketPageClient() {
           <div className="h-3 bg-linear-to-r from-accent to-primary" />
           <div className="p-5 sm:p-6">
             <div className="mb-4 flex flex-col gap-3">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h2
-                  className="text-xl"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Cards in Basket
-                </h2>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs text-primary">
-                  <ShoppingBasket className="h-3.5 w-3.5" />
-                  <span className="uppercase tracking-wide">Qty</span>
-                  <span
-                    className="font-semibold text-foreground"
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <h2
+                    className="text-xl"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
-                    {totals.totalQuantity}
-                  </span>
+                    Cards in Basket
+                  </h2>
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs text-primary">
+                    <ShoppingBasket className="h-3.5 w-3.5" />
+                    <span className="uppercase tracking-wide">Qty</span>
+                    <span
+                      className="font-semibold text-foreground"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      {totals.totalQuantity}
+                    </span>
+                  </div>
                 </div>
 
                 {showPrice && items.length > 0 && (
-                  <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-900">
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs text-emerald-900 sm:ml-auto">
                     <span className="uppercase tracking-wide">Total</span>
                     <span
-                      className="font-semibold text-md"
+                      className=" text-lg"
                       style={{ fontFamily: "var(--font-display)" }}
                     >
                       ${totalPrice.toFixed(2)}
