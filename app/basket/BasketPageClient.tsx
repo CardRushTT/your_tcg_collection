@@ -370,7 +370,13 @@ export function BasketPageClient() {
                     key={item.cardId}
                     className="rounded-xl border-2 border-border bg-input-background/40 p-4"
                   >
-                    <div className="grid grid-cols-[80px_1fr] gap-3 items-stretch">
+                    <div
+                      className={`grid gap-3 items-stretch ${
+                        showPrice
+                          ? "grid-cols-[80px_1fr_auto]"
+                          : "grid-cols-[80px_1fr]"
+                      }`}
+                    >
                       <div className="relative w-20 min-h-28 self-stretch overflow-hidden rounded-md border border-border bg-card/60">
                         {item.cardImage ? (
                           <button
@@ -449,6 +455,14 @@ export function BasketPageClient() {
                           </button>
                         </div>
                       </div>
+
+                      {showPrice && (
+                        <div className="flex items-start">
+                          <div className="rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-md font-semibold text-emerald-900">
+                            ${Number(item.price ?? 1).toFixed(2)}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </article>
                 ))}
