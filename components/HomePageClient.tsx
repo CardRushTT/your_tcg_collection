@@ -348,9 +348,30 @@ function HomeContent() {
   ) => {
     const currentCard = cards.find((card) => card.cardId === id);
     const nextQuantity = updates.quantity ?? currentCard?.quantity;
+    const nextPrice = updates.price ?? currentCard?.price;
+    const nextCardCondition =
+      updates.cardCondition ?? currentCard?.cardCondition;
 
     if (!Number.isInteger(nextQuantity) || (nextQuantity ?? 0) < 1) {
       console.error("Quantity must be an integer greater than 0");
+      return;
+    }
+
+    if (
+      nextPrice !== undefined &&
+      (typeof nextPrice !== "number" ||
+        Number.isNaN(nextPrice) ||
+        nextPrice < 0)
+    ) {
+      console.error("Price must be a number greater than or equal to 0");
+      return;
+    }
+
+    if (
+      nextCardCondition !== undefined &&
+      (!nextCardCondition || !nextCardCondition.trim())
+    ) {
+      console.error("Card condition must be a non-empty string");
       return;
     }
 
@@ -363,11 +384,15 @@ function HomeContent() {
         body: JSON.stringify({
           cardId: id,
           quantity: nextQuantity,
+          ...(nextPrice !== undefined ? { price: nextPrice } : {}),
+          ...(nextCardCondition !== undefined
+            ? { cardCondition: nextCardCondition }
+            : {}),
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update card quantity");
+        throw new Error("Failed to update card");
       }
 
       const updatedCard = (await response.json()) as OwnedCardViewModel;
@@ -375,7 +400,7 @@ function HomeContent() {
         prevCards.map((card) => (card.cardId === id ? updatedCard : card)),
       );
     } catch (error) {
-      console.error("Error updating card quantity:", error);
+      console.error("Error updating card:", error);
     }
   };
 

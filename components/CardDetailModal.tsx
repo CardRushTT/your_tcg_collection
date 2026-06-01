@@ -1,7 +1,7 @@
 import { Edit2, Save, Trash2, X } from "lucide-react";
 
 import type { OwnedCardViewModel } from "@/database/ownedCard.model";
-import { RARITY_COLORS } from "@/lib/constants";
+import { CARD_CONDITIONS, RARITY_COLORS } from "@/lib/constants";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -27,6 +27,10 @@ export function CardDetailModal({
   const [isSaving, setIsSaving] = useState(false);
   const [editData, setEditData] = useState(card);
   const [quantityInput, setQuantityInput] = useState(String(card.quantity));
+  const [priceInput, setPriceInput] = useState(String(card.price ?? 1));
+  const [cardConditionInput, setCardConditionInput] = useState(
+    card.cardCondition || "Mint",
+  );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const pokemonCard = card.card;
 
@@ -60,15 +64,30 @@ export function CardDetailModal({
     return parsed;
   };
 
+  const getNormalizedPrice = () => {
+    const parsed = Number.parseFloat(priceInput);
+    if (!Number.isFinite(parsed) || parsed < 0) return card.price ?? 1;
+    return parsed;
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const normalizedQuantity = getNormalizedQuantity();
-      const payload = { ...editData, quantity: normalizedQuantity };
+      const normalizedPrice = getNormalizedPrice();
+      const normalizedCondition = cardConditionInput.trim() || "Mint";
+      const payload = {
+        ...editData,
+        quantity: normalizedQuantity,
+        price: normalizedPrice,
+        cardCondition: normalizedCondition,
+      };
       await onUpdate(payload);
       onSaveSuccess?.(normalizedQuantity);
       setEditData(payload);
       setQuantityInput(String(normalizedQuantity));
+      setPriceInput(String(normalizedPrice));
+      setCardConditionInput(normalizedCondition);
       setIsEditing(false);
       onClose();
     } finally {
@@ -174,6 +193,20 @@ export function CardDetailModal({
                         ×{card.quantity}
                       </span>
                     </div>
+
+                    <div className="flex items-center justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Price</span>
+                      <span className="font-medium">
+                        ${Number(card.price ?? 1).toFixed(2)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Condition</span>
+                      <span className="font-medium">
+                        {card.cardCondition || "Mint"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -183,6 +216,8 @@ export function CardDetailModal({
                     <button
                       onClick={() => {
                         setQuantityInput(String(editData.quantity));
+                        setPriceInput(String(editData.price ?? 1));
+                        setCardConditionInput(editData.cardCondition || "Mint");
                         setIsEditing(true);
                       }}
                       className="flex-1 px-4 py-3 bg-accent text-accent-foreground rounded-lg
@@ -212,7 +247,7 @@ export function CardDetailModal({
                     className="text-xl mb-4"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
-                    Change Quantity
+                    Edit Card Details
                   </h3>
 
                   <div>
@@ -229,6 +264,46 @@ export function CardDetailModal({
                                rounded-lg focus:outline-none focus:border-primary"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm mb-1">Price</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={priceInput}
+                      onChange={(e) => setPriceInput(e.target.value)}
+                      onBlur={() =>
+                        setPriceInput(getNormalizedPrice().toFixed(2))
+                      }
+                      className="w-full px-4 py-2 bg-input-background border-2 border-border
+                               rounded-lg focus:outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm mb-1">Condition</label>
+                    <select
+                      value={cardConditionInput}
+                      onChange={(e) => setCardConditionInput(e.target.value)}
+                      className="w-full px-4 py-2 bg-input-background border-2 border-border
+                               rounded-lg focus:outline-none focus:border-primary"
+                    >
+                      {!CARD_CONDITIONS.includes(
+                        cardConditionInput as (typeof CARD_CONDITIONS)[number],
+                      ) ? (
+                        <option value={cardConditionInput}>
+                          {cardConditionInput}
+                        </option>
+                      ) : null}
+
+                      {CARD_CONDITIONS.map((condition) => (
+                        <option key={condition} value={condition}>
+                          {condition}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Edit Actions */}
@@ -237,6 +312,8 @@ export function CardDetailModal({
                     onClick={() => {
                       setEditData(card);
                       setQuantityInput(String(card.quantity));
+                      setPriceInput(String(card.price ?? 1));
+                      setCardConditionInput(card.cardCondition || "Mint");
                       setIsEditing(false);
                     }}
                     disabled={isSaving}

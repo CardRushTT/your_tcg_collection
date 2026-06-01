@@ -17,3 +17,13 @@ export const COLLECTR_SET_MAP: Record<string, string> = {
   "Sword & Shield Base Set": "Sword & Shield",
   "Sword & Shield Promo": "SWSH Black Star Promos",
 };
+
+export const CARD_CONDITIONS = [
+  "Near Mint",
+  "Lightly Played",
+  "Moderately Played",
+  "Heavily Played",
+  "Damaged",
+  "Dent",
+  "Print Line",
+] as const;
