@@ -36,6 +36,7 @@ export default function AddCardPage() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
+  const [deleteAllInventoryFirst, setDeleteAllInventoryFirst] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [collectrAddedCount, setCollectrAddedCount] = useState<number | null>(
     null,
@@ -47,6 +48,7 @@ export default function AddCardPage() {
   const [quantityInput, setQuantityInput] = useState("1");
   const { toastMessage, showToast } = useToast(1700);
   const showImportFromCollectr = isEnabled(FEATURE_FLAG_NAMES[0]);
+  const showDeleteAllInventory = isEnabled("show_delete_all_inventory");
 
   const getNormalizedQuantity = () => {
     const parsed = Number.parseInt(quantityInput, 10);
@@ -133,6 +135,7 @@ export default function AddCardPage() {
   const closeImportModal = () => {
     setIsImportModalOpen(false);
     setImportFile(null);
+    setDeleteAllInventoryFirst(false);
   };
 
   const handleCollectrImport = async () => {
@@ -148,6 +151,10 @@ export default function AddCardPage() {
 
       const formData = new FormData();
       formData.append("file", importFile);
+      formData.append(
+        "deleteAllInventoryFirst",
+        String(deleteAllInventoryFirst),
+      );
 
       const response = await fetch(
         withBasePath("/api/owned-cards/import/collectr"),
@@ -546,6 +553,26 @@ export default function AddCardPage() {
                     : "No file selected"}
                 </p>
               </div>
+
+              {showDeleteAllInventory ? (
+                <label className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={deleteAllInventoryFirst}
+                    onChange={(event) =>
+                      setDeleteAllInventoryFirst(event.target.checked)
+                    }
+                    className="mt-0.5 h-4 w-4"
+                  />
+                  <span>
+                    Delete all inventory before import
+                    <span className="block text-xs text-muted-foreground">
+                      This clears existing owned cards, then imports from the
+                      CSV.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
 
               <div className="flex gap-3 pt-1">
                 <button

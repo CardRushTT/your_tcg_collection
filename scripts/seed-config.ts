@@ -17,6 +17,10 @@ const seedConfig: ConfigSeedInput[] = [
     name: "show_price",
     value: "false",
   },
+  {
+    name: "show_delete_all_inventory",
+    value: "false",
+  },
 ];
 
 async function runSeed() {

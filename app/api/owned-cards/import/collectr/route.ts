@@ -62,6 +62,8 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file");
+    const deleteAllInventoryFirst =
+      String(formData.get("deleteAllInventoryFirst") ?? "false") === "true";
 
     if (!(file instanceof File)) {
       return NextResponse.json(
@@ -123,6 +125,10 @@ export async function POST(request: Request) {
     let addedCount = 0;
 
     await connectDB();
+
+    if (deleteAllInventoryFirst) {
+      await OwnedCard.deleteMany({});
+    }
 
     for (const [index, rowText] of dataRows.entries()) {
       const row = rowText

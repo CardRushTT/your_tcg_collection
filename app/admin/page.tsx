@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 
 const COLLECTR_IMPORT_CONFIG_NAME = FEATURE_FLAG_NAMES[0];
 const SHOW_PRICE_CONFIG_NAME = FEATURE_FLAG_NAMES[1];
+const SHOW_DELETE_ALL_INVENTORY_CONFIG_NAME = FEATURE_FLAG_NAMES[2];
 
 function AdminLoginContentInner() {
   const { data: session } = useSession();
@@ -22,6 +23,9 @@ function AdminLoginContentInner() {
     boolean | null
   >(null);
   const [showPrice, setShowPrice] = useState<boolean | null>(null);
+  const [showDeleteAllInventory, setShowDeleteAllInventory] = useState<
+    boolean | null
+  >(null);
   const [isSavingSetting, setIsSavingSetting] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
@@ -29,12 +33,14 @@ function AdminLoginContentInner() {
     if (!session) {
       setShowImportFromCollectr(null);
       setShowPrice(null);
+      setShowDeleteAllInventory(null);
       setSettingsError(null);
       return;
     }
 
     setShowImportFromCollectr(isEnabled(COLLECTR_IMPORT_CONFIG_NAME));
     setShowPrice(isEnabled(SHOW_PRICE_CONFIG_NAME));
+    setShowDeleteAllInventory(isEnabled(SHOW_DELETE_ALL_INVENTORY_CONFIG_NAME));
   }, [session, isEnabled]);
 
   const handleToggleCollectrImport = async () => {
@@ -97,6 +103,39 @@ function AdminLoginContentInner() {
       setShowPrice(!!data.enabled);
     } catch {
       setShowPrice(!nextEnabled);
+      setSettingsError("Could not save setting. Please try again.");
+    } finally {
+      setIsSavingSetting(false);
+    }
+  };
+
+  const handleToggleShowDeleteAllInventory = async () => {
+    if (showDeleteAllInventory === null || isSavingSetting) return;
+
+    setSettingsError(null);
+    setIsSavingSetting(true);
+
+    const nextEnabled = !showDeleteAllInventory;
+    setShowDeleteAllInventory(nextEnabled);
+
+    try {
+      const response = await fetch(withBasePath("/api/admin/config"), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: SHOW_DELETE_ALL_INVENTORY_CONFIG_NAME,
+          enabled: nextEnabled,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save settings");
+      }
+
+      const data = (await response.json()) as { enabled?: boolean };
+      setShowDeleteAllInventory(!!data.enabled);
+    } catch {
+      setShowDeleteAllInventory(!nextEnabled);
       setSettingsError("Could not save setting. Please try again.");
     } finally {
       setIsSavingSetting(false);
@@ -233,6 +272,43 @@ function AdminLoginContentInner() {
                       <span
                         className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
                           showPrice ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {settingsError ? (
+                    <div className="mt-2 rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1.5 text-xs text-destructive">
+                      {settingsError}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="rounded-lg border border-border bg-input-background/50 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">
+                        Show Delete All Inventory
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleToggleShowDeleteAllInventory}
+                      disabled={isSavingSetting}
+                      aria-label="Toggle Show Delete All Inventory setting"
+                      aria-pressed={!!showDeleteAllInventory}
+                      className={`relative inline-flex h-7 w-12 items-center rounded-full border transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                        showDeleteAllInventory
+                          ? "bg-primary border-primary/80"
+                          : "bg-muted border-border"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                          showDeleteAllInventory
+                            ? "translate-x-6"
+                            : "translate-x-1"
                         }`}
                       />
                     </button>
