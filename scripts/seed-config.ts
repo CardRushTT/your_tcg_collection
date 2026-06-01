@@ -29,6 +29,10 @@ const seedConfig: ConfigSeedInput[] = [
     name: "show_create_card",
     value: "false",
   },
+  {
+    name: "show_delete_pokemon_card",
+    value: "false",
+  },
 ];
 
 async function runSeed() {
