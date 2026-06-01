@@ -20,10 +20,6 @@ const pokemonCardSchema = new Schema(
     types: {
       type: [{ type: String, trim: true }],
       required: false,
-      validate: {
-        validator: (value: string[]) => value.length > 0,
-        message: "At least one Pokemon type is required.",
-      },
       default: null,
     },
     convertedRetreatCost: {
