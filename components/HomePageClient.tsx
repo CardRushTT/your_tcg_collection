@@ -14,6 +14,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { AppToast } from "@/components/AppToast";
 import { CardGrid } from "@/components/CardGrid";
 import { LoadingState } from "@/components/LoadingState";
+import { PokemonTypeSelect } from "@/components/PokemonTypeSelect";
 import {
   PriceSortSelect,
   type PriceSortValue,
@@ -64,6 +65,7 @@ function HomeContent() {
   const [selectedRarity, setSelectedRarity] = useState("");
   const [selectedSetId, setSelectedSetId] = useState("");
   const [selectedArtist, setSelectedArtist] = useState("");
+  const [selectedType, setSelectedType] = useState("");
   const [stats, setStats] = useState<CollectionStatsResponse>({
     totalQuantity: 0,
     artists: [],
@@ -74,6 +76,7 @@ function HomeContent() {
   const [isLoading, setIsLoading] = useState(true);
   const { isEnabled } = useFeatureFlags();
   const showPrice = isEnabled("show_price");
+  const showPokemonTypeFilter = isEnabled("show_pokemon_type_filter");
   const { toastMessage, showToast } = useToast(1700);
   const listTopRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollToListRef = useRef(false);
@@ -83,6 +86,7 @@ function HomeContent() {
   const rarityFromUrl = searchParams.get("rarity")?.trim() ?? "";
   const setFromUrl = searchParams.get("set")?.trim() ?? "";
   const artistFromUrl = searchParams.get("artist")?.trim() ?? "";
+  const typeFromUrl = searchParams.get("type")?.trim() ?? "";
   const rawPageFromUrl = Number(searchParams.get("page") ?? "1");
 
   const fetchCards = async () => {
@@ -154,6 +158,10 @@ function HomeContent() {
   useEffect(() => {
     setSelectedArtist(artistFromUrl);
   }, [artistFromUrl]);
+
+  useEffect(() => {
+    setSelectedType(typeFromUrl);
+  }, [typeFromUrl]);
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
@@ -250,6 +258,25 @@ function HomeContent() {
     });
   };
 
+  const handleTypeChange = async (type: string) => {
+    setSelectedType(type);
+    setSearchQuery("");
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (type) {
+      nextParams.set("type", type);
+    } else {
+      nextParams.delete("type");
+    }
+    nextParams.delete("search");
+    nextParams.delete("page");
+
+    const query = nextParams.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  };
+
   const handlePriceSortChange = async (priceSort: PriceSortValue) => {
     setSelectedPriceSort(priceSort);
 
@@ -294,6 +321,15 @@ function HomeContent() {
     if (selectedArtist) {
       const cardArtist = card.card.artist?.toLowerCase() ?? "";
       if (cardArtist !== selectedArtist.toLowerCase()) {
+        return false;
+      }
+    }
+
+    if (selectedType) {
+      const cardTypes = card.card.types ?? [];
+      if (
+        !cardTypes.some((t) => t.toLowerCase() === selectedType.toLowerCase())
+      ) {
         return false;
       }
     }
@@ -529,6 +565,12 @@ function HomeContent() {
               artists={artistOptions}
               onChange={handleArtistChange}
             />
+            {showPokemonTypeFilter ? (
+              <PokemonTypeSelect
+                value={selectedType}
+                onChange={handleTypeChange}
+              />
+            ) : null}
           </div>
 
           <div className="flex w-full items-center justify-center gap-3">
