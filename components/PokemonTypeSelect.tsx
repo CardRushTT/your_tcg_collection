@@ -21,7 +21,7 @@ export function PokemonTypeSelect({ value, onChange }: PokemonTypeSelectProps) {
   }, []);
 
   return (
-    <div className="relative inline-block w-full sm:w-auto">
+    <div className="relative w-full sm:w-65">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
