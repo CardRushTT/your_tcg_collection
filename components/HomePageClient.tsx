@@ -35,6 +35,7 @@ type CollectionStatsResponse = {
     id: string;
     name: string;
   }>;
+  rarities?: string[];
 };
 
 const CARDS_PER_PAGE = 12;
@@ -67,6 +68,7 @@ function HomeContent() {
     totalQuantity: 0,
     artists: [],
     sets: [],
+    rarities: [],
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -515,6 +517,7 @@ function HomeContent() {
             <RaritySelect
               value={selectedRarity}
               onChange={handleRarityChange}
+              rarities={stats.rarities}
             />
             <SetSelect
               value={selectedSetId}

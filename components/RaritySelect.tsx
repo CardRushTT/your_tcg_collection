@@ -1,23 +1,36 @@
-import { RARITY_COLORS } from "@/lib/constants";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const RARITY_OPTIONS = Object.entries(RARITY_COLORS)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([label, gradient]) => ({ label, gradient }));
+import { RARITY_COLORS } from "@/lib/constants";
+
+const DEFAULT_RARITY_GRADIENT = "from-gray-400 to-gray-300";
 
 interface RaritySelectProps {
   value: string;
   onChange: (value: string) => void;
+  rarities?: string[];
 }
 
-export function RaritySelect({ value, onChange }: RaritySelectProps) {
+export function RaritySelect({ value, onChange, rarities }: RaritySelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Compute the options list strictly from the rarities provided by the server.
+  // If no rarities are provided, render an empty list (only "All Rarities" will be shown).
+  const computedOptions = useMemo(() => {
+    if (!rarities || rarities.length === 0) return [];
+
+    return [...rarities]
+      .filter(Boolean)
+      .map((label) => ({
+        label,
+        gradient: RARITY_COLORS[label] ?? DEFAULT_RARITY_GRADIENT,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [rarities]);
 
   const selectedOption = useMemo(
-    () => RARITY_OPTIONS.find((option) => option.label === value),
-    [value],
+    () => computedOptions.find((option) => option.label === value),
+    [value, computedOptions],
   );
 
   useEffect(() => {
@@ -83,7 +96,7 @@ export function RaritySelect({ value, onChange }: RaritySelectProps) {
           <div className="my-1 h-px bg-border" />
 
           <div className="max-h-64 overflow-y-auto">
-            {RARITY_OPTIONS.map((option) => (
+            {computedOptions.map((option) => (
               <button
                 key={option.label}
                 type="button"
