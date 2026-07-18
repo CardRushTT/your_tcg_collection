@@ -7,10 +7,12 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+const APOSTROPHE_VARIANTS_CLASS = "['’‘ʼ]";
+
 function buildApostropheInsensitivePattern(value: string): string {
   return escapeRegex(value).replace(
     /['\u2018\u2019\u02BC]/g,
-    "['\\u2018\\u2019\\u02BC]",
+    `${APOSTROPHE_VARIANTS_CLASS}?`,
   );
 }
 
