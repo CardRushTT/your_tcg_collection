@@ -7,6 +7,15 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+const APOSTROPHE_VARIANTS_CLASS = "['’‘ʼ]";
+
+function buildApostropheInsensitivePattern(value: string): string {
+  return escapeRegex(value).replace(
+    /['\u2018\u2019\u02BC]/g,
+    `${APOSTROPHE_VARIANTS_CLASS}?`,
+  );
+}
+
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -75,7 +84,7 @@ export async function GET(request: NextRequest) {
       name.length > 0
         ? {
             name: {
-              $regex: escapeRegex(name),
+              $regex: buildApostropheInsensitivePattern(name),
               $options: "i",
             },
           }
