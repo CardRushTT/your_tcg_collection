@@ -362,6 +362,7 @@ function HomeContent() {
       ? Math.floor(rawPageFromUrl)
       : 1;
   const currentPage = Math.min(pageFromUrl, totalPages);
+  const [pageInput, setPageInput] = useState(() => String(currentPage));
   const pageStart = (currentPage - 1) * CARDS_PER_PAGE;
   const paginatedCards = sortedCards.slice(
     pageStart,
@@ -387,6 +388,16 @@ function HomeContent() {
     });
   };
 
+  const handlePageInputSubmit = () => {
+    const parsedPage = Number(pageInput.trim());
+    if (!Number.isFinite(parsedPage)) {
+      setPageInput(String(currentPage));
+      return;
+    }
+
+    setPage(Math.floor(parsedPage));
+  };
+
   useEffect(() => {
     if (pageFromUrl !== currentPage) {
       const nextParams = new URLSearchParams(searchParams.toString());
@@ -403,6 +414,10 @@ function HomeContent() {
       });
     }
   }, [currentPage, pageFromUrl, pathname, router, searchParams]);
+
+  useEffect(() => {
+    setPageInput(String(currentPage));
+  }, [currentPage]);
 
   useEffect(() => {
     if (!shouldScrollToListRef.current) return;
@@ -652,6 +667,36 @@ function HomeContent() {
                 <span className="font-semibold text-foreground">
                   {totalPages}
                 </span>
+              </div>
+
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5 text-sm text-muted-foreground">
+                <label htmlFor="page-number" className="pl-1">
+                  Go to
+                </label>
+                <input
+                  id="page-number"
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={(event) => setPageInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handlePageInputSubmit();
+                    }
+                  }}
+                  className="w-16 rounded-md border border-border bg-background px-2 py-1 text-center font-medium text-foreground outline-none transition-colors focus:border-ring"
+                  aria-label="Go to page"
+                />
+                <span>of {totalPages}</span>
+                <button
+                  type="button"
+                  onClick={handlePageInputSubmit}
+                  className="rounded-md border border-border bg-background px-2.5 py-1 font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  Go
+                </button>
               </div>
 
               <button
